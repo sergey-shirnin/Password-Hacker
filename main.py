@@ -1,14 +1,21 @@
 import socket
 import sys
+from string import ascii_lowercase, digits
+from itertools import product
 
-my_socket = socket.socket()
+
 args = sys.argv
-ip = args[1]
-port = int(args[2])
-data = args[3].encode()
+host = (args[1], int(args[2]))
+buffer = 1024
 
-my_socket.connect((ip, port))
-my_socket.send(data)
-response = my_socket.recv(1024).decode()
-print(response)
-my_socket.close()
+char_base = ''.join((ascii_lowercase, digits))
+pw_gen = (comb for i in range(1, len(char_base) + 1) for comb in product(char_base, repeat=i))
+success_msg = 'Connection success!'; response = ''
+
+with socket.socket() as my_socket:
+    my_socket.connect(host)
+    while response != success_msg:
+        pw = ''.join(next(pw_gen))
+        my_socket.send(pw.encode())
+        response = my_socket.recv(buffer).decode()
+    print(pw)
